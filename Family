@@ -1,2 +1,674 @@
-very very Good!  day day Up!
-我把这个文件给编辑了一下 
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>面试题</title>
+    <script type="text/javascript" src="../js/jquery.js"></script>
+    <script type="text/javascript">
+        $(function(){
+            var str = 'asddfhfcnrgyhjmkadfas';
+
+            function test(str){
+                var obj = {};
+                var num = 0;
+                var value = '';
+
+                for(var i = 0; i<str.length;i++){
+                   console.log(str);
+                   if( !obj[ str[i] ] ){
+                        obj[ str[i] ] = [];
+                   }
+                   obj[ str[i] ].push(str[i]);
+                }
+
+                for(var attr in obj){
+                    if(num < obj[attr].length){
+                        num = obj[attr].length;
+                        value = obj[attr][0];
+                    }
+                }
+                return "最大的长度是" + num + "最长的字母是："+value;
+            }
+
+//            console.log(test(str));
+
+            function test1(str){
+                var arr = str.split('');
+                arr.sort();
+                var str = arr.join('');
+
+                var re = /(\w)\1+/g;
+
+                var num = 0;
+                var value = '';
+
+                str.replace(re,function($0,$1){
+                    if(num < $0.length){
+                        num = $0.length;
+                        value = $1;
+                    }
+                });
+                return {"a":num,"b":value};
+            }
+
+            var reobj = test1(str);
+
+//            console.log(reobj);
+
+
+            //数字转化为千分位
+
+            var numS = '1563469583';
+
+            function numFn(num){
+
+                var iNumber = num.length%3;
+                var group = [];
+                var prev = '';
+                var inow = 0;
+                var tem = '';
+
+
+                if(iNumber != 0){
+                    prev = num.toString().substring(0,iNumber);
+                    group.push(prev);
+                }
+
+                var subNum = num.substring(iNumber);
+
+                //方式一
+//                for(var i = 0; i < subNum.length; i+=3){
+//                    group.push( subNum.slice(i,i+3) );
+//                }
+                //方式二
+                for(var i = 0 ; i < subNum.length; i++){
+                    inow++;
+                    tem +=subNum[i];//累加
+                    if(inow == 3 && tem){
+                        group.push(tem);
+                        inow = 0;
+                        tem = '';
+                    }
+                }
+
+                return group.join(',');
+
+            }
+            console.log( numFn(numS) );
+
+            //正则表达式来实现
+
+            var arr1 = [1,5,8,96,54,25];
+            arr1.splice(2,1,"hks");
+//            document.write("is:"+arr1);
+
+
+
+            //快速排序 算法 找基准点
+            function quickSort(arr){
+                if(arr.length<=1) return arr;
+
+                var num = Math.floor(arr.length/2);//找到中间数的索引值，如果是浮点数，则向下取整
+                var numValue = arr.splice(num,1);
+                var left = [];
+                var right = [];
+
+                for(var i = 0,arrLen = arr.length; i < arrLen; i++){
+                    if(arr[i] < numValue){
+                        left.push(arr[i]);//基准点的左边的数传到左边数组
+                    }else{
+                        right.push(arr[i]);//基准点的右边的数传到右边数组
+                    }
+                }
+//                console.log(left,right);
+//                console.log(numValue);
+                return quickSort(left).concat([numValue],quickSort(right));//递归不断重复比较
+            }
+
+//            document.write("  find:"+quickSort([32,16,37,18,5,88]));
+
+
+
+
+
+
+
+
+
+!function (window) {
+    "use strict";
+
+
+//    var util = window.YDUI.util;
+
+    var util = {},
+        doc = window.document;
+
+    /**
+     * 日期格式化
+     * @param format 日期格式 {%d天}{%h时}{%m分}{%s秒}{%f毫秒}
+     * @param time 单位 毫秒
+     * @returns {string}
+     */
+    util.timestampTotime = function (format, time) {
+        var t = {},
+                floor = Math.floor;
+
+        t.f = time % 1000;
+        time = floor(time / 1000);
+        t.s = time % 60;
+        time = floor(time / 60);
+        t.m = time % 60;
+        time = floor(time / 60);
+        t.h = time % 24;
+        t.d = floor(time / 24);
+
+        var ment = function (a) {
+            if (a <= 0) {
+                return '';
+            }
+            return '$1' + (a < 10 ? '0' + a : a) + '$2';
+        };
+
+        format = format.replace(/\{([^{]*?)%d(.*?)\}/g, ment(t.d));
+        format = format.replace(/\{([^{]*?)%h(.*?)\}/g, ment(t.h));
+        format = format.replace(/\{([^{]*?)%m(.*?)\}/g, ment(t.m));
+        format = format.replace(/\{([^{]*?)%s(.*?)\}/g, ment(t.s));
+        format = format.replace(/\{([^{]*?)%f(.*?)\}/g, ment(t.f));
+
+        return format;
+    };
+
+    /**
+     * js倒计时
+     * @param format 时间格式 {%d}天{%h}时{%m}分{%s}秒{%f}毫秒
+     * @param time 结束时间时间戳 毫秒
+     * @param speed 速度
+     * @param callback ret 倒计时结束回调函数 ret 时间字符 ；ret == '' 则倒计时结束
+     * DEMO: YDUI.util.countdown('{%d天}{%h时}{%m分}{%s秒}{%f毫秒}', Date.parse(new Date()) + 60000, 1000, function(ret){ console.log(ret); });
+     */
+    util.countdown = function (format, time, speed, callback) {
+        var that = this;
+        var timer = setInterval(function () {
+            var l_time = time - new Date().getTime();
+            if (l_time > 0) {
+                callback(that.timestampTotime(format, l_time));
+            } else {
+                clearInterval(timer);
+                typeof callback == 'function' && callback('');
+            }
+        }, speed);
+    };
+
+    util.countdown('{%d天}{%h时}{%m分}{%s秒}', Date.parse(new Date()) + 60000, 1000, function(ret){
+        $("#time").html(ret);
+    });
+
+
+    function KeyBoard (element, options) {
+        this.$element = $(element);
+        this.options = $.extend({}, KeyBoard.DEFAULTS, options || {});
+//        this.init();
+    }
+
+    KeyBoard.DEFAULTS = {
+        disorder: false,
+        title: '安全键盘'
+    };
+
+    KeyBoard.prototype.createNums = function () {
+        var _this = this;
+        var disorder = _this.options.disorder;
+
+        if (disorder && _this.cacheNums) {
+            return _this.cacheNums;
+        }
+
+        var strArr = [];
+        for (var i = 1; i <= 10; i++) {
+            strArr.push('<a href="javascript:;" class="J_Nums">' + (i % 10) + '</div>');
+        }
+
+        if (!disorder) {
+            _this.cacheNums = strArr;
+        }
+
+        return strArr;
+    };
+    var html = new KeyBoard();
+    html.createNums();
+
+    /**
+     * js 加减乘除
+     * @param arg1 数值1
+     * @param op 操作符string 【+ - * /】
+     * @param arg2 数值2
+     * @returns {Object} arg1 与 arg2运算的精确结果
+     */
+//    util.calc = function (arg1, op, arg2) {
+//        var ra = 1, rb = 1, m;
+//
+//        try {
+//            ra = arg1.toString().split('.')[1].length;
+//        } catch (e) {
+//        }
+//        try {
+//            rb = arg2.toString().split('.')[1].length;
+//        } catch (e) {
+//        }
+//        m = Math.pow(10, Math.max(ra, rb));
+//
+//        switch (op) {
+//            case '+':
+//            case '-':
+//                arg1 = Math.round(arg1 * m);
+//                arg2 = Math.round(arg2 * m);
+//                break;
+//            case '*':
+//                ra = Math.pow(10, ra);
+//                rb = Math.pow(10, rb);
+//                m = ra * rb;
+//                arg1 = Math.round(arg1 * ra);
+//                arg2 = Math.round(arg2 * rb);
+//                break;
+//            case '/':
+//                arg1 = Math.round(arg1 * m);
+//                arg2 = Math.round(arg2 * m);
+//                m = 1;
+//                break;
+//        }
+//        try {
+//            var result = eval('(' + '(' + arg1 + ')' + op + '(' + arg2 + ')' + ')/' + m);
+//        } catch (e) {
+//        }
+//        return result;
+//    };
+
+    /**
+     * 读取图片文件 并返回图片的DataUrl
+     * @param obj
+     * @param callback
+     */
+//    util.getImgBase64 = function (obj, callback) {
+//        var that = this, dataimg = '', file = obj.files[0];
+//        if (!file)return;
+//        if (!/image\/\w+/.test(file.type)) {
+//            that.tipMes('请上传图片文件', 'error');
+//            return;
+//        }
+//        var reader = new FileReader();
+//        reader.readAsDataURL(file);
+//        reader.onload = function () {
+//            dataimg = this.result;
+//            typeof callback === 'function' && callback(dataimg);
+//        };
+//    };
+
+    /**
+     * 获取地址栏参数
+     * @param name
+     * @returns {*}
+     */
+//    util.getQueryString = function (name) {
+//        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"),
+//                r = window.location.search.substr(1).match(reg),
+//                qs = '';
+//        if (r != null)qs = decodeURIComponent(r[2]);
+//        return qs;
+//    };
+
+    /**
+     * Cookie
+     * @type {{get, set}}
+     */
+//    util.cookie = function () {
+//        return {
+//            /**
+//             * 获取 Cookie
+//             * @param  {String} name
+//             * @return {String}
+//             */
+//            get: function (name) {
+//                var m = doc.cookie.match('(?:^|;)\\s*' + name + '=([^;]*)');
+//                return (m && m[1]) ? decodeURIComponent(m[1]) : '';
+//            },
+//            /**
+//             * 设置 Cookie
+//             * @param {String}  name 名称
+//             * @param {String}  val 值
+//             * @param {Number} expires 单位（秒）
+//             * @param {String}  domain 域
+//             * @param {String}  path 所在的目录
+//             * @param {Boolean} secure 跨协议传递
+//             */
+//            set: function (name, val, expires, domain, path, secure) {
+//                var text = String(encodeURIComponent(val)),
+//                        date = expires;
+//
+//                // 从当前时间开始，多少小时后过期
+//                if (typeof date === 'number') {
+//                    date = new Date();
+//                    date.setTime(date.getTime() + expires * 1000);
+//                }
+//
+//                date instanceof Date && (text += '; expires=' + date.toUTCString());
+//
+//                !!domain && (text += '; domain=' + domain);
+//
+//                text += '; path=' + (path || '/');
+//
+//                secure && (text += '; secure');
+//
+//                doc.cookie = name + '=' + text;
+//            }
+//        }
+//    }();
+
+}(window);
+
+
+
+
+
+
+//Json对象
+//            $.getJSON('./jsonData/test.json', function(data){
+//                console.log(data);return;
+//                for (var i = 0; i < data.rows.length; i++) {
+//                    $('#test').append('<p>' + data.rows[i].realName + '</p>');
+//                }
+//            });
+//
+//            //GET
+//            $.get("getUrl.php",{id:123,name:"h",age:28},function(data){
+//                console.log(data);
+//            });
+//            //POST
+//            $.post("postUrl.php",{id:123,name:"h",age:28},function(data){
+//                console.log(data);
+//            },json);//默认是字符串类型
+//
+//            $.ajax({
+//                url:"ajaxUrl.php",
+//                data:$("#form").serialize(),
+//                type:"post",
+//                datatype:"json",
+//                beforeSend:function(){
+//                    console.log("正在加载...");
+//                },
+//                success:function(data){//回调函数
+//                    console.log("回调函数！！！");
+//                },
+//                error:function(e){
+//                    console.log(e);
+//                }
+//            })
+
+
+
+            //为采用防抖技术
+    //        var i = 0;
+    //        window.addEventListener("scroll",function(){
+    //            console.log(i++);
+    //        },false);
+            //采用防抖
+            function debounce(func,wait){
+                var timer;
+                return function(){
+                    // 每次触发 scroll handler 时先清除定时器
+                    clearTimeout(timer);
+                    // 指定 xx ms 后触发真正想进行的操作 handler
+                    timer = setTimeout(func,wait);
+                }
+            }
+
+            function reladFun(){
+                console.log("触发了~");
+            }
+
+//            window.addEventListener("scroll",debounce(reladFun,500),false);
+
+            //防抖技术 二  封装函数
+            // 防抖动函数
+            function debounce(func, wait, immediate) {
+                var timeout;
+                return function() {
+                    var context = this, args = arguments;
+                    var later = function() {
+                        timeout = null;
+                        if (!immediate) func.apply(context, args);
+                    };
+                    var callNow = immediate & !timeout;
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                    if (callNow) func.apply(context, args);
+                };
+            };
+
+            var myEfficientFn = debounce(function() {
+                // 滚动中的真正的操作
+                console.log("我是函数！");
+            }, 1000);
+
+            // 绑定监听
+//            window.addEventListener('resize', myEfficientFn);
+
+
+            //节流函数
+            function jieliu(func,wait,mustRun){
+                var timer;
+                var Startime = new Date();
+                return function(){
+                    var context = this,
+                            args = arguments,
+                            Curtime = new Date();
+
+                    clearTimeout(timer);
+                    // 如果达到了规定的触发时间间隔，触发 handler
+                    if(Curtime - Startime >= mustRun){
+                        func.apply(context,args);
+                        Startime = Curtime;
+                    }else{// 没达到触发间隔，重新设定定时器
+                        timer = setTimeout(func,wait);
+                    }
+
+                }
+            }
+
+            //触发滚动的Handel
+            function runHand(){
+                console.log("规定时间内我执行了~");
+            }
+
+//            window.addEventListener("scroll",jieliu(runHand,500,1000),false);
+
+
+            var ticking = false; // rAF 触发锁
+
+            function onScroll(){
+                if(!ticking) {
+                    requestAnimationFrame(realFunc);
+                    ticking = true;
+                }
+            }
+
+            function realFunc(){
+                // do something...
+                console.log("Success");
+                ticking = false;
+            }
+// 滚动事件监听
+            window.addEventListener('scroll', onScroll, false);
+
+
+            function fun(num){
+                if(typeof num === 'number' && num > 1){
+                    fun( --num );
+                }
+                console.log("Echo:"+num);
+            }
+//            fun(5);
+
+
+            function fact(num){
+                if (num<=1){
+                    return 1;
+                }else{
+                    return num*arguments.callee(num-1); //此处更改了。
+                }
+            }
+
+            var anotherFact = fact;
+            fact = null;
+//            alert(anotherFact(4));
+
+
+            //面向对象
+            function test(str){
+                alert(this.name+" : "+str);
+            }
+            var object = new Object();
+            object.name = 'zhangsan';
+//            test.call(object,"Hello,World!");
+
+            //父类
+            function Parent(username){
+                this.username = username;
+                this.hello = function(){
+                    console.log(this.username);
+                }
+            }
+            //子类
+            function Child(username,password){
+                Parent.call(this,username);
+                this.password = password;
+                this.world = function(){
+                    console.log(this.password);
+                }
+            }
+            var parent = new Parent("hks");
+            var child = new Child("houzi","123456");
+
+            parent.hello();
+            console.log(child.password);
+            console.log(child.username);
+            child.hello();
+            child.world();
+
+
+
+
+
+//            console.log(parent);
+//            console.log(child.username);
+
+
+
+
+        });
+    </script>
+
+
+</head>
+<body>
+asdfasdf
+<div>
+    还剩余：<div id="time"></div>
+</div>
+
+<div style="width:100%;height:100px;">sdfasd</div>
+
+
+<!--CSS3 -->
+<style type="text/css">
+    .chidouren{
+        width: 0px;
+        height: 0px;
+        /*background: yellow;*/
+        border:50px solid yellow;
+        border-color: yellow transparent yellow yellow;
+        -webkit-border-radius: 50px;
+        border-radius: 50px;
+    }
+</style>
+<div class="chidouren">吃豆人</div>
+<!--心型-->
+<style type="text/css">
+    .heart_shaped{
+        width: 160px;
+        height: 150px;
+        position: relative;
+        margin-top: 20px;
+        background:#000000;
+    }
+    .heart_shaped:before{
+        position: absolute;
+        left: 25px;;
+        content: "";
+        display: block;
+        background: #f00;
+        width: 80px;
+        height: 120px;
+        border-radius:50px 50px 0 0;
+        transform: rotate(-45deg);
+    }
+    .heart_shaped:after{
+        position: absolute;
+        right: 25px;;
+        content: "";
+        display: block;
+        background: #f00;
+        width: 80px;
+        height: 120px;
+        border-radius:50px 50px 0 0;
+        transform: rotate(45deg);
+    }
+
+</style>
+<div class="heart_shaped"></div>
+<!--阴阳图-->
+
+<style>
+    .gossip{
+        position: relative;
+        margin-top: 20px;
+        width: 96px;
+        height: 48px;;
+        baorder-color:#000;
+        border-style:solid;
+        border-width: 2px 2px 50px 2px;
+        background: #fff;
+        border-radius: 100%;
+    }
+    .gossip:before{
+        position: absolute;
+        content: "";
+        left: 0px;
+        top: 50%;
+        background: #fff;
+        width: 12px;
+        height: 12px;
+        border:18px solid #000;
+        border-radius: 100%;
+    }
+    .gossip:after{
+        position: absolute;
+        content: "";
+        left: 50%;
+        top: 50%;
+        background: #000;
+        width: 12px;
+        height: 12px;
+        border:18px solid #fff;
+        border-radius: 100%;
+    }
+</style>
+<div class="gossip">八卦阴阳图</div>
+
+
+</body>
+</html>
+
+
+
+
