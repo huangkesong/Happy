@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>面试题</title>
+    <title>常见面试题</title>
     <script type="text/javascript" src="../js/jquery.js"></script>
     <script type="text/javascript">
         $(function(){
